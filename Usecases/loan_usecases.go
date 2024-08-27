@@ -21,12 +21,12 @@ func NewLoanUseCases(service_reference Domain.LoanRepository) *LoanUseCases {
 	}
 }
 
-func (usecase *LoanUseCases) GetLoans(c *gin.Context) ([]*Dtos.GetLoan, error, int) {
-	loans, err, status := usecase.LoanRepository.GetLoans(context.Background())
+func (usecase *LoanUseCases) GetLoans(c *gin.Context, filter Domain.Filter) ([]*Dtos.GetLoan, error, int, Domain.PaginationMetaData) {
+	loans, err, status, paginationMetaData := usecase.LoanRepository.GetLoans(context.Background(), filter)
 	if err != nil {
-		return nil, err, status
+		return nil, err, status, paginationMetaData
 	}
-	return loans, nil, 200
+	return loans, nil, 200, paginationMetaData
 }
 
 func (usecase *LoanUseCases) GetLoansById(c *gin.Context, id primitive.ObjectID, user Domain.AccessClaims) (*Dtos.GetLoan, error, int) {
@@ -35,7 +35,7 @@ func (usecase *LoanUseCases) GetLoansById(c *gin.Context, id primitive.ObjectID,
 	if err != nil {
 		return nil, err, status
 	}
-	if loan.UserID != user.ID || user.Role != "admin" {
+	if user.Role != "admin" && loan.UserID != user.ID {
 		return nil, errors.New("Unauthorized Access"), 401
 	}
 	return loan, nil, 200

@@ -55,21 +55,91 @@ func (lr *LoanRepository) CreateLoan(ctx context.Context, loan *Domain.Loan) (*D
 	return newLoan, nil, 201
 }
 
-func (lr *LoanRepository) GetLoans(ctx context.Context) ([]*Dtos.GetLoan, error, int) {
-	cursor, err := lr.LoanCollection.Find(ctx, bson.D{})
-	if err != nil {
-		return nil, err, 500
-	}
+func (lr *LoanRepository) GetLoans(ctx context.Context, filter Domain.Filter) ([]*Dtos.GetLoan, error, int, Domain.PaginationMetaData) {
 	var loans []*Dtos.GetLoan
-	for cursor.Next(ctx) {
-		var loan *Dtos.GetLoan
-		err := cursor.Decode(&loan)
-		if err != nil {
-			return nil, err, 500
-		}
-		loans = append(loans, loan)
+	// Initialize the filter for MongoDB query
+	pipeline := []bson.M{}
+	// Build the match stage for filtering
+	matchStage := bson.M{}
+	countfilter := bson.M{}
+
+	// Set up pagination parameters
+	page := 1
+	if filter.Page > 1 {
+		page = filter.Page
 	}
-	return loans, nil, 200
+	limit := 20
+	if filter.Limit > 0 {
+		limit = filter.Limit
+	}
+
+	// Add filters based on the filter criteria provided
+	// if filter.LoanerName != "" {
+	// 	matchStage["lonername"] = filter.LoanerName
+	// 	countfilter["lonername"] = filter.LoanerName
+	// }
+
+	// Count the number of documents that match the filter criteria
+	count, err := lr.LoanCollection.CountDocuments(ctx, countfilter)
+
+	// Default sort by updated_at in descending order
+	orderBy := -1
+	if filter.Status != "" {
+		matchStage["status"] = filter.Status
+		countfilter["status"] = filter.Status
+		if filter.Status == "pending" {
+			orderBy = 1
+		} else {
+			orderBy = -1
+		}
+
+	}
+	if filter.OrderBy == 1 {
+		orderBy = 1
+	}
+	sortBy := "updated_at"
+	sort := bson.M{sortBy: orderBy}
+	if filter.SortBy != "" {
+		pipeline = append(pipeline, bson.M{"$sort": bson.M{sortBy: orderBy}})
+	} else {
+		pipeline = append(pipeline, bson.M{"$sort": sort})
+
+	}
+
+	pipeline = append(pipeline, bson.M{"$skip": int64((page - 1) * limit)})
+	pipeline = append(pipeline, bson.M{"$limit": int64(limit)})
+
+	cursor, err := lr.LoanCollection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err, 500, Domain.PaginationMetaData{}
+	}
+	defer cursor.Close(ctx)
+
+	if err = cursor.All(ctx, &loans); err != nil {
+		return nil, err, 500, Domain.PaginationMetaData{}
+	}
+	// Return the list of posts, nil error, and a 200 status code
+	paginationMetaData := Domain.PaginationMetaData{
+		TotalRecords: int(count),
+		TotalPages:   int(count / int64(limit)),
+		PageSize:     limit,
+		CurrentPage:  page,
+	}
+
+	// cursor, err := lr.LoanCollection.Find(ctx, bson.D{})
+	// if err != nil {
+	// 	return nil, err, 500, Domain.PaginationMetaData{}
+	// }
+
+	// for cursor.Next(ctx) {
+	// 	var loan *Dtos.GetLoan
+	// 	err := cursor.Decode(&loan)
+	// 	if err != nil {
+	// 		return nil, err, 500, Domain.PaginationMetaData{}
+	// 	}
+	// 	loans = append(loans, loan)
+	// }
+	return loans, nil, 200, paginationMetaData
 }
 
 func (lr *LoanRepository) GetLoansById(ctx context.Context, id primitive.ObjectID) (*Dtos.GetLoan, error, int) {
@@ -87,7 +157,12 @@ func (lr *LoanRepository) UpdateLoansById(ctx context.Context, id primitive.Obje
 	defer lr.mu.RUnlock()
 
 	loan.UpdatedAt = primitive.NewDateTimeFromTime(Utils.GetCurrentTime())
-	_, err := lr.LoanCollection.UpdateOne(ctx, bson.D{{"_id", id}}, bson.D{{"$set", loan}})
+	err := lr.validator.Struct(loan)
+	if err != nil {
+		return nil, errors.New("Invalid status"), 400
+	}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: loan.Status}, {Key: "updatedAt", Value: loan.UpdatedAt}}}}
+	_, err = lr.LoanCollection.UpdateOne(ctx, bson.D{{"_id", id}}, update)
 	if err != nil {
 		return nil, err, 500
 	}

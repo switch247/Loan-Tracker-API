@@ -37,12 +37,13 @@ func LoanRouter() {
 	}
 
 	userRouter := Router.Group("/loans")
+	userRouter.Use(is_authenticated)
 	{
 
 		// apply for loan
 		userRouter.POST("", loan_controller.CreateLoan)
 		//get loan
-		userRouter.GET("", loan_controller.GetLoan)
+		userRouter.GET("/:id", loan_controller.GetLoan)
 
 	}
 

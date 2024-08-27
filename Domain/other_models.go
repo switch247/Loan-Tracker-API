@@ -9,12 +9,10 @@ type LoanCollections struct {
 }
 
 type Filter struct {
-	Title      string
-	Slug       string
+	Status     string
 	LoanerName string
 	Page       int
 	Limit      int
-	Tags       []string
 	SortBy     string
 	OrderBy    int
 }

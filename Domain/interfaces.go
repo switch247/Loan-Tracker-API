@@ -62,7 +62,7 @@ type UserUseCases interface {
 
 type LoanRepository interface {
 	CreateLoan(ctx context.Context, loan *Loan) (*Dtos.GetLoan, error, int)
-	GetLoans(ctx context.Context) ([]*Dtos.GetLoan, error, int)
+	GetLoans(ctx context.Context, filter Filter) ([]*Dtos.GetLoan, error, int, PaginationMetaData)
 	GetLoansById(ctx context.Context, id primitive.ObjectID) (*Dtos.GetLoan, error, int)
 	UpdateLoansById(ctx context.Context, id primitive.ObjectID, loan *Dtos.UpdateLoan) (*Dtos.GetLoan, error, int)
 	DeleteLoansById(ctx context.Context, id primitive.ObjectID) (error, int)
@@ -70,7 +70,7 @@ type LoanRepository interface {
 
 type LoanUseCases interface {
 	CreateLoan(c *gin.Context, loan *Loan) (*Dtos.GetLoan, error, int)
-	GetLoans(c *gin.Context) ([]*Dtos.GetLoan, error, int)
+	GetLoans(c *gin.Context, filter Filter) ([]*Dtos.GetLoan, error, int, PaginationMetaData)
 	GetLoansById(c *gin.Context, id primitive.ObjectID, user AccessClaims) (*Dtos.GetLoan, error, int)
 	UpdateLoansById(c *gin.Context, id primitive.ObjectID, loan *Dtos.UpdateLoan) (*Dtos.GetLoan, error, int)
 	DeleteLoansById(c *gin.Context, id primitive.ObjectID) (error, int)
