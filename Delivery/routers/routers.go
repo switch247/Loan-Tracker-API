@@ -12,7 +12,7 @@ import (
 )
 
 var Router *gin.Engine
-var BlogCollections Domain.BlogCollections
+var LoanCollections Domain.LoanCollections
 
 func Setuprouter(client *mongo.Client) *gin.Engine {
 	// Initialize the database
@@ -21,7 +21,7 @@ func Setuprouter(client *mongo.Client) *gin.Engine {
 	//initialize the user collections
 	usercol := DataBase.Collection("Users")
 	refreshtokencol := DataBase.Collection("RefreshTokens")
-
+	loancol := DataBase.Collection("Loans")
 	// Initialize the custom user collections
 	customUserCol := custommongo.NewMongoCollection(usercol)
 	indexModels := []mongo.IndexModel{
@@ -37,8 +37,11 @@ func Setuprouter(client *mongo.Client) *gin.Engine {
 	}
 	customRefreshTokenCol := custommongo.NewMongoCollection(refreshtokencol)
 
-	BlogCollections = Domain.BlogCollections{
+	customLoanCol := custommongo.NewMongoCollection(loancol)
+
+	LoanCollections = Domain.LoanCollections{
 		Users:         customUserCol,
+		Loans:         customLoanCol,
 		RefreshTokens: customRefreshTokenCol,
 	}
 	// Initialize the router
@@ -47,6 +50,9 @@ func Setuprouter(client *mongo.Client) *gin.Engine {
 
 	// user router
 	UserRouter()
+
+	// loan router
+	LoanRouter()
 
 	return Router
 

@@ -14,7 +14,7 @@ func UserRouter() {
 	validator := validator.New()
 	email_service_reference := emailservice.NewMailService()
 
-	user_repo := Repositories.NewUserRepository(BlogCollections.Users, BlogCollections.RefreshTokens, validator, email_service_reference)
+	user_repo := Repositories.NewUserRepository(LoanCollections.Users, LoanCollections.RefreshTokens, validator, email_service_reference)
 
 	user_usecase := usecases.NewUserUseCase(user_repo)
 	user_controller := controllers.NewUserController(user_usecase)

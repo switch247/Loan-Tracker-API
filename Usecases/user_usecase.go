@@ -1,4 +1,4 @@
-package usecases
+package UseCases
 
 import (
 	"Loan-Tracker-API/Domain"

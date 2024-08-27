@@ -63,6 +63,10 @@ func GenerateSlug(title string) string {
 // 	return false, nil
 // }
 
+func GetCurrentTime() time.Time {
+	return time.Now()
+}
+
 func getCurrentTimeString() string {
 	// Get the current time
 	currentTime := time.Now()

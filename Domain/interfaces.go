@@ -60,6 +60,22 @@ type UserUseCases interface {
 	StoreToken(c *gin.Context, userid primitive.ObjectID, refreshToken string) (error, int)
 }
 
+type LoanRepository interface {
+	CreateLoan(ctx context.Context, loan *Loan) (*Dtos.GetLoan, error, int)
+	GetLoans(ctx context.Context) ([]*Dtos.GetLoan, error, int)
+	GetLoansById(ctx context.Context, id primitive.ObjectID) (*Dtos.GetLoan, error, int)
+	UpdateLoansById(ctx context.Context, id primitive.ObjectID, loan *Dtos.UpdateLoan) (*Dtos.GetLoan, error, int)
+	DeleteLoansById(ctx context.Context, id primitive.ObjectID) (error, int)
+}
+
+type LoanUseCases interface {
+	CreateLoan(c *gin.Context, loan *Loan) (*Dtos.GetLoan, error, int)
+	GetLoans(c *gin.Context) ([]*Dtos.GetLoan, error, int)
+	GetLoansById(c *gin.Context, id primitive.ObjectID, user AccessClaims) (*Dtos.GetLoan, error, int)
+	UpdateLoansById(c *gin.Context, id primitive.ObjectID, loan *Dtos.UpdateLoan) (*Dtos.GetLoan, error, int)
+	DeleteLoansById(c *gin.Context, id primitive.ObjectID) (error, int)
+}
+
 type MailService interface {
 	SendEmail(toEmail string, subject string, text string, category string) error
 	SendActivationEmail(email string, activationToken string) error

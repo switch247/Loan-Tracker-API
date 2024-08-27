@@ -1,20 +1,17 @@
 package Domain
 
-type BlogCollections struct {
+type LoanCollections struct {
 	Users         Collection
-	Blogs         Collection
 	RefreshTokens Collection
 	ResetTokens   Collection
-	Posts         Collection
-	Comments      Collection
-	LikesDislikes Collection
-	Tags          Collection
+	Loans         Collection
+	Logs          Collection
 }
 
 type Filter struct {
 	Title      string
 	Slug       string
-	AuthorName string
+	LoanerName string
 	Page       int
 	Limit      int
 	Tags       []string
