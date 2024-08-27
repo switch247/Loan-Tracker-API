@@ -77,12 +77,12 @@ func (s *MailService) SendEmail(toEmail string, subject string, text string, cat
 
 func (s *MailService) SendActivationEmail(email string, activationToken string) error {
 	// send activation email
-	return s.SendEmail(email, "Verify Email", `Click "`+Config.BASE_URL+`/auth/activate/`+activationToken+`"here to verify email.
+	return s.SendEmail(email, "Verify Email", `Click "`+Config.BASE_URL+`/users/verify-email/`+activationToken+`"here to verify email.
 	`, "reset")
 }
 
 func (s *MailService) SendPasswordResetEmail(email string, resetToken string) error {
 	// send password reset email
-	return s.SendEmail(email, "Reset Password", `Click "`+Config.BASE_URL+`/auth/password-reset/`+resetToken+`">hereto reset your password.
+	return s.SendEmail(email, "Reset Password", `Click "`+Config.BASE_URL+`/users/password-update/`+resetToken+`">hereto reset your password.
 `, "reset")
 }
