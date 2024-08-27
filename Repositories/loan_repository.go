@@ -73,14 +73,7 @@ func (lr *LoanRepository) GetLoans(ctx context.Context, filter Domain.Filter) ([
 		limit = filter.Limit
 	}
 
-	// Add filters based on the filter criteria provided
-	// if filter.LoanerName != "" {
-	// 	matchStage["lonername"] = filter.LoanerName
-	// 	countfilter["lonername"] = filter.LoanerName
-	// }
-
 	// Count the number of documents that match the filter criteria
-	count, err := lr.LoanCollection.CountDocuments(ctx, countfilter)
 
 	// Default sort by updated_at in descending order
 	orderBy := -1
@@ -97,13 +90,19 @@ func (lr *LoanRepository) GetLoans(ctx context.Context, filter Domain.Filter) ([
 	if filter.OrderBy == 1 {
 		orderBy = 1
 	}
+	// Add match stage to the pipeline if there are any filters
+	if len(matchStage) > 0 {
+		pipeline = append(pipeline, bson.M{"$match": matchStage})
+	}
+
+	count, err := lr.LoanCollection.CountDocuments(ctx, countfilter)
+
 	sortBy := "updated_at"
 	sort := bson.M{sortBy: orderBy}
 	if filter.SortBy != "" {
 		pipeline = append(pipeline, bson.M{"$sort": bson.M{sortBy: orderBy}})
 	} else {
 		pipeline = append(pipeline, bson.M{"$sort": sort})
-
 	}
 
 	pipeline = append(pipeline, bson.M{"$skip": int64((page - 1) * limit)})
@@ -126,19 +125,6 @@ func (lr *LoanRepository) GetLoans(ctx context.Context, filter Domain.Filter) ([
 		CurrentPage:  page,
 	}
 
-	// cursor, err := lr.LoanCollection.Find(ctx, bson.D{})
-	// if err != nil {
-	// 	return nil, err, 500, Domain.PaginationMetaData{}
-	// }
-
-	// for cursor.Next(ctx) {
-	// 	var loan *Dtos.GetLoan
-	// 	err := cursor.Decode(&loan)
-	// 	if err != nil {
-	// 		return nil, err, 500, Domain.PaginationMetaData{}
-	// 	}
-	// 	loans = append(loans, loan)
-	// }
 	return loans, nil, 200, paginationMetaData
 }
 
