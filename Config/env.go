@@ -16,6 +16,7 @@ var TEMPLATE_ID string
 var PUBLIC_KEY string
 var Cloud_api_key string
 var Cloud_api_secret string
+var Data_Base_Name string
 
 func Envinit() {
 

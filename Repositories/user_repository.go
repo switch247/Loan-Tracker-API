@@ -336,7 +336,16 @@ func (ur *UserRepository) Register(ctx context.Context, user *Dtos.RegisterUserD
 	fetched.Password = ""
 	err, statusCode := ur.SendActivationEmail(fetched.Email)
 	if err != nil {
-		return &fetched, err, statusCode
+		// clean up
+		filter := bson.D{{"_id", fetched.ID}}
+		deleteResult, err2 := ur.UserCollection.DeleteOne(ctx, filter)
+		if err2 != nil || deleteResult.DeletedCount == 0 {
+			fmt.Println("error at cleanup", err2)
+			return &Dtos.OmitedUser{}, errors.New("error clean up"), 500
+		} else {
+			fmt.Println(err)
+			return &Dtos.OmitedUser{}, err, statusCode
+		}
 	}
 	return &fetched, err, 200
 }
