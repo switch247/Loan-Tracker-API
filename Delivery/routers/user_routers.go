@@ -24,7 +24,7 @@ func UserRouter() {
 	is_admin := auth_middleware.IsAdminMiddleware(user_repo)
 	{
 		// users routes
-		userRouter.GET("/", user_controller.GetUsers)
+		userRouter.GET("/", is_authenticated, is_admin, user_controller.GetUsers)
 		userRouter.DELETE("/:id", is_authenticated, is_admin, user_controller.DeleteUser)
 		// extra
 		userRouter.POST("/", is_authenticated, is_admin, user_controller.CreateUser)

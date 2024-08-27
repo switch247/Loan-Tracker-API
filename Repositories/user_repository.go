@@ -35,10 +35,11 @@ type UserRepository struct {
 func NewUserRepository(user_collection Domain.Collection, token_collection Domain.Collection, _valdator *validator.Validate, email_service_reference *emailservice.MailService) *UserRepository {
 
 	return &UserRepository{
-		validator:      _valdator,
-		UserCollection: user_collection,
-		mu:             sync.RWMutex{},
-		emailservice:   email_service_reference,
+		validator:          _valdator,
+		UserCollection:     user_collection,
+		mu:                 sync.RWMutex{},
+		refresh_collection: token_collection,
+		emailservice:       email_service_reference,
 		// oauth2Config:    *oauth_config,
 	}
 }
@@ -63,6 +64,16 @@ func (ur *UserRepository) CreateUser(ctx context.Context, user *Domain.User) (Dt
 		return Dtos.OmitedUser{}, err, 500
 	}
 	user.Password = string(hashedPassword)
+	if user.Role == "" {
+		user.Role = "user"
+	}
+	if user.UserName == "" {
+		user.UserName = user.Email + "_" + user.Role
+	}
+	if user.EmailVerified == false {
+		user.EmailVerified = true
+	}
+	fmt.Println(user)
 	insertResult, err := ur.UserCollection.InsertOne(ctx, user)
 	if err != nil {
 		return Dtos.OmitedUser{}, err, 500
@@ -158,7 +169,7 @@ func (ur *UserRepository) DeleteUsersById(ctx context.Context, id primitive.Obje
 	defer ur.mu.RUnlock()
 
 	filter := bson.D{{"_id", id}}
-	if current_user.Role == "user" && current_user.ID != id {
+	if current_user.Role == "user" {
 		return errors.New("permission denied"), http.StatusForbidden
 	}
 
