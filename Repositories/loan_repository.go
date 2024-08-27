@@ -96,7 +96,9 @@ func (lr *LoanRepository) GetLoans(ctx context.Context, filter Domain.Filter) ([
 	}
 
 	count, err := lr.LoanCollection.CountDocuments(ctx, countfilter)
-
+	if err != nil {
+		return nil, err, 500, Domain.PaginationMetaData{}
+	}
 	sortBy := "updated_at"
 	sort := bson.M{sortBy: orderBy}
 	if filter.SortBy != "" {
