@@ -40,7 +40,7 @@ func UserRouter() {
 		authRouter.POST("/login", user_controller.Login)
 
 		//logout
-		authRouter.GET("/logout", auth_middleware.AuthMiddleware(), user_controller.Logout)
+		authRouter.GET("/logout", is_authenticated, user_controller.Logout)
 		// forget password
 		authRouter.POST("/password-reset", user_controller.ForgetPassword)
 		authRouter.GET("/password-reset/:reset_token", user_controller.ForgetPasswordForm)
@@ -52,7 +52,7 @@ func UserRouter() {
 	}
 
 	profileRouter := userRouter.Group("/profile")
-	profileRouter.Use(auth_middleware.AuthMiddleware())
+	profileRouter.Use(is_authenticated)
 	{
 
 		// get all users
@@ -63,7 +63,7 @@ func UserRouter() {
 	}
 
 	refreshRouter := userRouter.Group("/token")
-	refreshRouter.Use(auth_middleware.AuthMiddleware())
+	refreshRouter.Use(is_authenticated)
 	{
 		refreshRouter.GET("refresh", user_controller.Refresh)
 	}
