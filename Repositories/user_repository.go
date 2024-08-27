@@ -348,9 +348,8 @@ func (ur *UserRepository) Register(ctx context.Context, user *Dtos.RegisterUserD
 	err, statusCode := ur.SendActivationEmail(fetched.Email)
 	if err != nil {
 		// clean up
-		filter := bson.D{{"_id", fetched.ID}}
-		deleteResult, err2 := ur.UserCollection.DeleteOne(ctx, filter)
-		if err2 != nil || deleteResult.DeletedCount == 0 {
+		err2, _ := ur.DeleteUsersById(ctx, fetched.ID, Domain.AccessClaims{Role: "admin"})
+		if err2 != nil {
 			fmt.Println("error at cleanup", err2)
 			return &Dtos.OmitedUser{}, errors.New("error clean up"), 500
 		} else {

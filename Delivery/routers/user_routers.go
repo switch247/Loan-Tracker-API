@@ -19,16 +19,19 @@ func UserRouter() {
 	user_usecase := usecases.NewUserUseCase(user_repo)
 	user_controller := controllers.NewUserController(user_usecase)
 
+	adminRouter := Router.Group("/admin")
 	userRouter := Router.Group("/users")
+
 	is_authenticated := auth_middleware.AuthMiddleware()
 	is_admin := auth_middleware.IsAdminMiddleware(user_repo)
+
 	{
 		// users routes
-		userRouter.GET("/", is_authenticated, is_admin, user_controller.GetUsers)
-		userRouter.DELETE("/:id", is_authenticated, is_admin, user_controller.DeleteUser)
+		adminRouter.GET("users/", is_authenticated, is_admin, user_controller.GetUsers)
+		adminRouter.DELETE("users/:id", is_authenticated, is_admin, user_controller.DeleteUser)
 		// extra
-		userRouter.POST("/", is_authenticated, is_admin, user_controller.CreateUser)
-		userRouter.GET("/:id", is_authenticated, is_admin, user_controller.GetUser)
+		adminRouter.POST("users/", is_authenticated, is_admin, user_controller.CreateUser)
+		adminRouter.GET("users/:id", is_authenticated, is_admin, user_controller.GetUser)
 	}
 
 	authRouter := userRouter.Group("")

@@ -66,11 +66,14 @@ func (s *MailService) SendEmail(toEmail string, subject string, text string, cat
 		var responseBody map[string]interface{}
 		err := json.NewDecoder(resp.Body).Decode(&responseBody)
 		if err != nil {
+			fmt.Errorf("error sending email: %s", responseBody["message"])
+
 			return fmt.Errorf("error sending email verification email: %s", resp.Status)
 		}
+		fmt.Errorf("error sending email: %s", responseBody["message"])
 		return errors.New("error sending email verification email: " + responseBody["message"].(string))
-		// fmt.Errorf("error sending email: %s", responseBody["message"])
 	}
+	fmt.Println(req.Body)
 
 	return nil
 }
