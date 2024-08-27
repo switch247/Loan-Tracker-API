@@ -12,7 +12,7 @@ import (
 )
 
 var Router *gin.Engine
-var BlogCollections Domain.BlogCollections
+var LoanCollections Domain.LoanCollections
 
 func Setuprouter(client *mongo.Client) *gin.Engine {
 	// Initialize the database
@@ -37,7 +37,7 @@ func Setuprouter(client *mongo.Client) *gin.Engine {
 	}
 	customRefreshTokenCol := custommongo.NewMongoCollection(refreshtokencol)
 
-	BlogCollections = Domain.BlogCollections{
+	LoanCollections = Domain.LoanCollections{
 		Users:         customUserCol,
 		RefreshTokens: customRefreshTokenCol,
 	}

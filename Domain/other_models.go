@@ -1,6 +1,6 @@
 package Domain
 
-type BlogCollections struct {
+type LoanCollections struct {
 	Users         Collection
 	Blogs         Collection
 	RefreshTokens Collection
